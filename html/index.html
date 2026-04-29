@@ -7,80 +7,121 @@
   html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
     width: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    color: #fff;
+    height: 100%;
     overflow: hidden;
-    background: #0b1e3a;
+    background: #0b1422;
   }
-  body {
-    background: linear-gradient(135deg, #0b1e3a 0%, #1d3a8a 50%, #4f1d8a 100%);
-    background-size: 200% 200%;
-    animation: bgshift 8s ease-in-out infinite alternate;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-  @keyframes bgshift {
-    from { background-position: 0% 0%; }
-    to   { background-position: 100% 100%; }
-  }
-  h1 {
-    margin: 0;
-    font-size: 4rem;
-    letter-spacing: -0.02em;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  }
-  .accent { color: #ffcc33; }
-  .clock {
-    margin-top: 1rem;
-    font-size: 2.5rem;
-    font-variant-numeric: tabular-nums;
-    background: rgba(0,0,0,0.25);
-    padding: 0.4rem 1.2rem;
-    border-radius: 0.6rem;
-    backdrop-filter: blur(4px);
-  }
-  .subtitle {
-    margin-top: 0.6rem;
-    font-size: 1.1rem;
-    opacity: 0.8;
-  }
-  .dot {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #ffcc33;
-    margin: 0 6px;
-    animation: pulse 1.4s ease-in-out infinite;
-  }
-  .dot:nth-child(2) { animation-delay: 0.2s; }
-  .dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes pulse {
-    0%, 100% { transform: scale(0.7); opacity: 0.5; }
-    50%      { transform: scale(1.2); opacity: 1.0; }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 </style>
 </head>
 <body>
-  <h1>Hello from <span class="accent">CEF</span> OSR</h1>
-  <div class="clock" id="clock">--:--:--</div>
-  <div class="subtitle">
-    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-    rendered into an OpenGL texture
-  </div>
+<canvas id="c"></canvas>
 <script>
-  function tick() {
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    document.getElementById('clock').textContent =
-      pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  const canvas = document.getElementById('c');
+  const ctx    = canvas.getContext('2d');
+
+  const BALLS = [
+    { color: '#ff2222', stroke: '#ff8888' },
+    { color: '#22cc44', stroke: '#88ffaa' },
+    { color: '#ffdd00', stroke: '#ffee88' },
+    { color: '#ffffff', stroke: '#aaaaaa' },
+    { color: '#111111', stroke: '#555555' },
+  ];
+  const RADIUS = 24;
+  const SPEED  = 180; // px per second
+
+  function rand(min, max) { return min + Math.random() * (max - min); }
+
+  let balls = [];
+
+  function init() {
+    const W = canvas.width;
+    const H = canvas.height;
+    balls = BALLS.map(({ color, stroke }) => {
+      const angle = rand(0, 2 * Math.PI);
+      return {
+        x:  rand(RADIUS, W - RADIUS),
+        y:  rand(RADIUS, H - RADIUS),
+        vx: Math.cos(angle) * SPEED,
+        vy: Math.sin(angle) * SPEED,
+        color,
+        stroke,
+      };
+    });
   }
-  tick();
-  setInterval(tick, 250);
+
+  function resize() {
+    canvas.width  = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    // Keep existing balls but clamp to new bounds (or re-init on first call).
+    if (balls.length === 0) {
+      init();
+    } else {
+      const W = canvas.width;
+      const H = canvas.height;
+      balls.forEach(b => {
+        b.x = Math.min(Math.max(b.x, RADIUS), W - RADIUS);
+        b.y = Math.min(Math.max(b.y, RADIUS), H - RADIUS);
+      });
+    }
+  }
+
+  let lastTime = null;
+
+  function frame(now) {
+    if (!lastTime) lastTime = now;
+    const dt = Math.min((now - lastTime) / 1000, 0.05); // seconds, cap at 50ms
+    lastTime = now;
+
+    const W = canvas.width;
+    const H = canvas.height;
+
+    // Update positions and bounce.
+    balls.forEach(b => {
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+
+      if (b.x - RADIUS < 0)     { b.x = RADIUS;     b.vx =  Math.abs(b.vx); }
+      if (b.x + RADIUS > W)     { b.x = W - RADIUS; b.vx = -Math.abs(b.vx); }
+      if (b.y - RADIUS < 0)     { b.y = RADIUS;     b.vy =  Math.abs(b.vy); }
+      if (b.y + RADIUS > H)     { b.y = H - RADIUS; b.vy = -Math.abs(b.vy); }
+    });
+
+    // Draw background.
+    ctx.fillStyle = '#0b1422';
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw each ball with a simple glow.
+    balls.forEach(b => {
+      const grad = ctx.createRadialGradient(
+        b.x - RADIUS * 0.3, b.y - RADIUS * 0.3, RADIUS * 0.1,
+        b.x, b.y, RADIUS
+      );
+      grad.addColorStop(0, b.stroke);
+      grad.addColorStop(1, b.color);
+
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, RADIUS, 0, 2 * Math.PI);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Subtle outline for visibility against dark background.
+      ctx.strokeStyle = b.stroke;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(frame);
 </script>
 </body>
 </html>
