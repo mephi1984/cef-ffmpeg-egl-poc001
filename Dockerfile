@@ -18,12 +18,22 @@ FROM ubuntu:24.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        # toolchain
         ca-certificates wget bzip2 \
         cmake build-essential pkg-config \
+        # X11 / EGL / GLES / GL — what our binary itself links against
         libx11-dev libxext-dev libxrandr-dev libxi-dev \
         libxcursor-dev libxinerama-dev libxxf86vm-dev \
         libegl1-mesa-dev libgles2-mesa-dev libgl-dev \
+        # FFmpeg
         libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
+        # libcef.so has DT_NEEDED entries for the full Chromium runtime;
+        # the linker resolves them at link time (CEF passes
+        # -Wl,--fatal-warnings, so missing libs become hard errors).
+        libnss3 libnspr4 libgtk-3-0 libgbm1 libxss1 libasound2t64 \
+        libxshmfence1 libdrm2 libatk1.0-0 libatk-bridge2.0-0 libatspi2.0-0 \
+        libcups2 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 \
+        libpango-1.0-0 libpangocairo-1.0-0 libdbus-1-3 \
     && rm -rf /var/lib/apt/lists/*
 
 # CEF binary distribution. Override at build time with --build-arg if a newer
