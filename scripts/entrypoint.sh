@@ -2,7 +2,7 @@
 #
 # Container entrypoint:
 #   1. start a virtual X server (Xvfb) on display :1
-#   2. expose it via x11vnc on port 8080
+#   2. expose it via x11vnc on port 5900
 #   3. exec the demo as PID 1, so the container exits when the demo exits
 #      (and Xvfb / x11vnc are cleaned up by Docker)
 #
@@ -10,7 +10,7 @@ set -euo pipefail
 
 DISPLAY_NUM="${DISPLAY_NUM:-1}"
 SCREEN_GEOMETRY="${SCREEN_GEOMETRY:-1280x720x24}"
-VNC_PORT="${VNC_PORT:-8080}"
+VNC_PORT="${VNC_PORT:-5900}"
 
 export DISPLAY=":${DISPLAY_NUM}"
 

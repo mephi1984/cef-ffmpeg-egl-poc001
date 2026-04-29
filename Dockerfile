@@ -7,8 +7,8 @@
 #                   and our binary need at run time, plus Xvfb + x11vnc.
 #
 # Build:   docker build -t cef-egl-demo .
-# Run:     docker run --rm -p 8080:8080 cef-egl-demo
-# View:    point a VNC client at localhost:8080 (no password).
+# Run:     docker run --rm -p 5900:5900 cef-egl-demo
+# View:    point a VNC client at localhost:5900 (no password).
 
 # ---------------------------------------------------------------------------
 # Stage 1: builder
@@ -112,7 +112,7 @@ COPY --from=builder /src/build/testvideo001.mp4        /app/
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# x11vnc listens here. The user's existing setup uses 8080, so match that.
-EXPOSE 8080
+# x11vnc listens here.
+EXPOSE 5900
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
