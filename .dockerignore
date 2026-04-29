@@ -1,0 +1,18 @@
+# Keep the build context small and reproducible: the Dockerfile downloads
+# CEF and runs CMake itself, so anything generated locally is irrelevant.
+
+build/
+build-*/
+third_party/
+
+.git/
+.gitignore
+.dockerignore
+
+.vscode/
+.idea/
+*.swp
+*~
+
+.DS_Store
+Thumbs.db

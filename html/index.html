@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CEF OSR Demo</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: #fff;
+    overflow: hidden;
+    background: #0b1e3a;
+  }
+  body {
+    background: linear-gradient(135deg, #0b1e3a 0%, #1d3a8a 50%, #4f1d8a 100%);
+    background-size: 200% 200%;
+    animation: bgshift 8s ease-in-out infinite alternate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  @keyframes bgshift {
+    from { background-position: 0% 0%; }
+    to   { background-position: 100% 100%; }
+  }
+  h1 {
+    margin: 0;
+    font-size: 4rem;
+    letter-spacing: -0.02em;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .accent { color: #ffcc33; }
+  .clock {
+    margin-top: 1rem;
+    font-size: 2.5rem;
+    font-variant-numeric: tabular-nums;
+    background: rgba(0,0,0,0.25);
+    padding: 0.4rem 1.2rem;
+    border-radius: 0.6rem;
+    backdrop-filter: blur(4px);
+  }
+  .subtitle {
+    margin-top: 0.6rem;
+    font-size: 1.1rem;
+    opacity: 0.8;
+  }
+  .dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffcc33;
+    margin: 0 6px;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(0.7); opacity: 0.5; }
+    50%      { transform: scale(1.2); opacity: 1.0; }
+  }
+</style>
+</head>
+<body>
+  <h1>Hello from <span class="accent">CEF</span> OSR</h1>
+  <div class="clock" id="clock">--:--:--</div>
+  <div class="subtitle">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    rendered into an OpenGL texture
+  </div>
+<script>
+  function tick() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('clock').textContent =
+      pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  tick();
+  setInterval(tick, 250);
+</script>
+</body>
+</html>
