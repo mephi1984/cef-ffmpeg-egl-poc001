@@ -1,3 +1,13 @@
+# TL;DR
+
+How to build and run:
+
+```
+docker build -t cef-egl-demo .
+docker run --rm -p 5900:5900 cef-egl-demo
+```
+Then open VNC client and connect to localhost:5900 using it.
+
 # CEF + EGL + OpenGL OSR demo
 
 A small C++/CMake application that opens an EGL/X11 window, runs CEF
