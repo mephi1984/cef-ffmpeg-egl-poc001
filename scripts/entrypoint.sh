@@ -11,6 +11,7 @@ set -euo pipefail
 DISPLAY_NUM="${DISPLAY_NUM:-1}"
 SCREEN_GEOMETRY="${SCREEN_GEOMETRY:-1280x720x24}"
 VNC_PORT="${VNC_PORT:-5900}"
+NOVNC_PORT="${NOVNC_PORT:-6080}"
 
 export DISPLAY=":${DISPLAY_NUM}"
 
@@ -36,6 +37,11 @@ echo "[entrypoint] starting x11vnc on port ${VNC_PORT}..."
 x11vnc -rfbport "${VNC_PORT}" -display "${DISPLAY}" \
        -nopw -forever -shared -quiet \
        >/tmp/x11vnc.log 2>&1 &
+
+echo "[entrypoint] starting noVNC on port ${NOVNC_PORT}..."
+websockify --web /usr/share/novnc/ \
+           "${NOVNC_PORT}" "localhost:${VNC_PORT}" \
+           >/tmp/novnc.log 2>&1 &
 
 cd /app
 echo "[entrypoint] launching cef_egl_demo..."

@@ -72,8 +72,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DISPLAY=:1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        # X server + VNC
-        xvfb x11vnc \
+        # X server + VNC + noVNC (browser-based viewer)
+        xvfb x11vnc novnc python3-websockify \
         # GL / X libs the binary links against
         libegl1 libgles2 libgl1 libx11-6 \
         # Mesa software renderer (for llvmpipe under Xvfb)
@@ -112,7 +112,8 @@ COPY --from=builder /src/build/testvideo001.mp4        /app/
 COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# x11vnc listens here.
-EXPOSE 5900
+# 5900 — raw VNC (x11vnc)
+# 6080 — noVNC web viewer (websockify → x11vnc)
+EXPOSE 5900 6080
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

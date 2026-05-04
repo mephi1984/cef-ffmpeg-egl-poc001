@@ -1,12 +1,22 @@
 # TL;DR
 
-How to build and run:
+**On Windows (PowerShell) — one command, browser opens automatically:**
 
+```powershell
+.\run.ps1
 ```
+
+This builds the image, starts the container, and opens the noVNC viewer in
+your default browser at `http://localhost:6080`. No VNC client needed.
+
+**Manual fallback:**
+
+```bash
 docker build -t cef-egl-demo .
-docker run --rm -p 5900:5900 cef-egl-demo
+docker run --rm -p 5900:5900 -p 6080:6080 cef-egl-demo
+# Then open http://localhost:6080/vnc.html?autoconnect=true in a browser
+# or connect a VNC client to localhost:5900
 ```
-Then open VNC client and connect to localhost:5900 using it.
 
 # CEF + EGL + OpenGL OSR demo
 
@@ -81,7 +91,25 @@ Runtime options (override via `-e`):
 | ----------------- | ------------ | ------------------------------------ |
 | `DISPLAY_NUM`     | `1`          | Xvfb display number (becomes `:N`)   |
 | `SCREEN_GEOMETRY` | `1280x720x24`| Xvfb screen geometry / depth         |
-| `VNC_PORT`        | `8080`       | x11vnc TCP port                      |
+| `VNC_PORT`        | `5900`       | x11vnc raw VNC port                  |
+| `NOVNC_PORT`      | `6080`       | noVNC HTTP port (browser viewer)     |
+
+## Native WSL2 on Windows 11 (no Docker, no VNC)
+
+Windows 11 ships **WSLg** — a built-in Wayland/X11 compositor that
+automatically forwards Linux GUI windows to the Windows desktop. If you
+build natively inside a WSL2 Ubuntu shell (not inside Docker), the demo
+window appears directly in Windows without any VNC setup:
+
+```bash
+# inside WSL2 — WSLg sets DISPLAY and WAYLAND_DISPLAY automatically
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j"$(nproc)"
+cd build && ./cef_egl_demo   # window pops up on the Windows desktop
+```
+
+Requirements: Windows 11 with WSL2 and the WSLg-enabled kernel
+(`wsl --update`). Windows 10 does not include WSLg.
 
 ## Native build (Ubuntu 24.04)
 
